@@ -1,0 +1,2 @@
+patchedDependencies:
+  epubjs@0.3.93: patches/epubjs@0.3.93.patch

@@ -1,0 +1,6 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["text"],
+  "properties": { "text": { "type": "string", "description": "고쳐 쓴 블록 텍스트" } }
+}

@@ -1,0 +1,29 @@
+diff --git a/lib/managers/default/index.js b/lib/managers/default/index.js
+index 4f56aafcb2b987af310b1a52411731a4e3e83650..6a43a4d3259d7a479ba49fff477ae8cfb7b61471 100644
+--- a/lib/managers/default/index.js
++++ b/lib/managers/default/index.js
+@@ -113,9 +113,6 @@ class DefaultViewManager {
+ 
+   addEventListeners() {
+     var scroller;
+-    window.addEventListener("unload", function (e) {
+-      this.destroy();
+-    }.bind(this));
+ 
+     if (!this.settings.fullsize) {
+       scroller = this.container;
+diff --git a/src/managers/default/index.js b/src/managers/default/index.js
+index 2812d878ad8eaa773abe5a55dbdfce7eec1f2a04..0634c29c094a784fc807c8aa13bd6558ba02e81f 100644
+--- a/src/managers/default/index.js
++++ b/src/managers/default/index.js
+@@ -117,10 +117,6 @@ class DefaultViewManager {
+ 	addEventListeners(){
+ 		var scroller;
+ 
+-		window.addEventListener("unload", function(e){
+-			this.destroy();
+-		}.bind(this));
+-
+ 		if(!this.settings.fullsize) {
+ 			scroller = this.container;
+ 		} else {
