@@ -1,19 +1,19 @@
 <script lang="ts">
   import { tick } from 'svelte'
-  import { blockHtml, clean, errors, type Block } from './epub'
+  import { BOX_CLS, blocksHtml, clean, errors, type Block } from './epub'
 
   export type Action = 'up' | 'down' | 'merge' | 'insert' | 'delete' | 'split'
 
-  let { block = $bindable(), pid, selected, fixing, onselect, onhover, onaction, onrecrop, onfix }: {
-    block: Block, pid: string, selected: boolean, fixing: boolean,
+  let { block = $bindable(), prev, pid, selected, fixing, onselect, onhover, onaction, onrecrop, onfix }: {
+    block: Block, prev?: Block, pid: string, selected: boolean, fixing: boolean,
     onselect: () => void, onhover: (on: boolean) => void,
     onaction: (a: Action, pos?: number) => void, onrecrop: () => void, onfix: () => void
   } = $props()
 
   let ta = $state<HTMLTextAreaElement>()
   const errs = $derived(errors(block))
-  const preview = $derived(clean(blockHtml(block, b => `/api/projects/${pid}/files/images/${b.src}?v=${b.v ?? 0}`)))
-  const label = { heading: '제목', paragraph: '문단 (인라인 수식 \\( \\))', math: 'LaTeX', figure: '캡션', table: 'HTML', list: '항목 (한 줄에 하나, 하위 항목은 앞에 공백 2칸)', contents: '목차 항목 (한 줄에 하나, 하위는 공백 2칸 들여쓰기)' }
+  const preview = $derived(clean(blocksHtml([block], b => `/api/projects/${pid}/files/images/${b.src}?v=${b.v ?? 0}`)))
+  const label = { heading: '제목', paragraph: '문단 (인라인 수식 \\( \\))', math: 'LaTeX', figure: '캡션', table: 'HTML', list: '항목 (한 줄에 하나, 하위 항목은 앞에 공백 2칸)', contents: '목차 항목 (한 줄에 하나, 하위는 공백 2칸 들여쓰기)', footnote: '각주 ("1 내용" — 본문 참조는 <sup class="fn">1</sup>)' }
 
   // 선택 영역을 태그로 감싸기 (허용 태그는 epub.ts STYLE 참고)
   function wrap(open: string, close: string) {
@@ -21,7 +21,18 @@
     block.text = block.text.slice(0, a) + open + block.text.slice(a, z) + close + block.text.slice(z)
     tick().then(() => { t.focus(); t.setSelectionRange(a + open.length, z + open.length) })
   }
-  const STYLED = ['heading', 'paragraph', 'list', 'contents', 'table']
+  const STYLED = ['heading', 'paragraph', 'list', 'contents', 'table', 'footnote']
+
+  // 블록 스타일 토글. 가운데/오른쪽, 작게/크게는 서로 배타. 상자를 켜면 자기 id 로 group 시작
+  const STYLES = [['center', '⟷ 가운데'], ['right', '⟶ 오른쪽'], ['quote', '❝ 인용'], ['indent', '⇥ 들여씀'], ['noindent', '첫줄 ⇤'],
+    ['small', '작게'], ['large', '크게'], ['box', '▢ 상자'], ['shade', '▤ 음영'], ['rule', '▎ 옆줄']]
+  const EXCL = [['center', 'right'], ['small', 'large']]
+  function toggle(s: string) {
+    const on = block.style?.includes(s)
+    const other = EXCL.find(g => g.includes(s))?.filter(x => x !== s) ?? []
+    block.style = on ? block.style!.filter(x => x !== s) : [...(block.style ?? []).filter(x => !other.includes(x)), s]
+    if (!on && BOX_CLS.includes(s) && !block.group) block.group = block.id
+  }
 
   // 표로 잘못 인식된 목차 → contents. 행마다 셀을 잇고 끝의 쪽번호는 버림, 번호의 점 개수로 들여쓰기
   function tableToContents() {
@@ -86,13 +97,29 @@
         <button title="고정폭" onclick={() => wrap('<code>', '</code>')}>{'</>'}</button>
         <button title="산세리프(고딕)" onclick={() => wrap('<span class="sans">', '</span>')}>Aa 고딕</button>
         <button title="세리프(명조)" onclick={() => wrap('<span class="serif">', '</span>')}>Aa 명조</button>
+        <button title="형광펜" onclick={() => wrap('<mark>', '</mark>')}><mark>H</mark></button>
+        <button title="취소선" onclick={() => wrap('<s>', '</s>')}><s>S</s></button>
+        <button title="각주 참조 (같은 표시의 다음 footnote 블록과 연결)" onclick={() => wrap('<sup class="fn">', '</sup>')}>각주¹</button>
         <label class="color" title="글자색"><input type="color" value="#c0392b" onchange={e => wrap(`<span style="color:${(e.target as HTMLInputElement).value}">`, '</span>')} /> 색</label>
         <button title="선택 영역의 스타일 태그 제거" onclick={() => {
           const t = ta!, [a, z] = [t.selectionStart, t.selectionEnd]
-          block.text = block.text.slice(0, a) + block.text.slice(a, z).replace(/<\/?(b|strong|i|em|u|sup|sub|code|small|span)\b[^>]*>/g, '') + block.text.slice(z)
+          block.text = block.text.slice(0, a) + block.text.slice(a, z).replace(/<\/?(b|strong|i|em|u|s|mark|sup|sub|code|small|span)\b[^>]*>/g, '') + block.text.slice(z)
         }}>⌫ 스타일</button>
       </div>
     {/if}
+    <div class="bar fmt">
+      {#each STYLES as [s, t]}
+        <button class:on={block.style?.includes(s)} onclick={() => toggle(s)}>{t}</button>
+      {/each}
+      {#if block.group || block.style?.some(s => BOX_CLS.includes(s))}
+        <label class="color" title="상자색 (테두리·음영·옆줄)"><input type="color" value={block.tint || '#888888'}
+          onchange={e => (block.tint = (e.target as HTMLInputElement).value)} /> 상자색</label>
+      {/if}
+      {#if prev?.group}
+        <label title="앞 블록과 같은 상자로 묶기"><input type="checkbox" checked={block.group === prev.group}
+          onchange={e => (block.group = (e.target as HTMLInputElement).checked ? prev.group : undefined)} /> 앞 상자에 포함</label>
+      {/if}
+    </div>
     <textarea bind:this={ta} bind:value={block.text} onkeydown={key} placeholder={label[block.type]}
       rows={block.type === 'figure' ? 1 : Math.min(14, block.text.split('\n').length + 1)}></textarea>
 

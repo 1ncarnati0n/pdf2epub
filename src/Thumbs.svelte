@@ -38,13 +38,14 @@
 </aside>
 
 <style>
-  .thumbs { overflow-y: auto; padding: 8px; background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
-  button { all: unset; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px; border-radius: 6px; font-size: 12px; color: var(--muted); }
-  button:hover { background: var(--hover); }
-  button.cur { background: var(--accent-soft); color: var(--fg); font-weight: 600; }
-  img, .ph { width: 96px; box-shadow: 0 1px 3px #0003; background: #fff; }
+  .thumbs { overflow-y: auto; padding: 0.4rem 0.8rem 2rem; background: var(--paper-dim); display: flex; flex-direction: column; gap: 6px; }
+  button, button:hover:not(:disabled) { display: flex; flex-direction: column; align-items: center; gap: 3px; border: 0; border-left: 2px solid transparent; background: none; padding: 6px 4px; color: var(--muted); font-size: 0.72rem; }
+  button:hover:not(:disabled) { background: var(--paper); }
+  button.cur { background: var(--paper); border-left-color: var(--sealed); color: var(--ink); }
+  img, .ph { width: 96px; box-shadow: 0 1px 4px -1px rgb(0 0 0 / 30%); background: #fff; }
+  button.cur img { outline: 1px solid var(--sealed); }
   .ph { aspect-ratio: 1 / 1.414; }
-  span { display: flex; align-items: center; gap: 4px; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: #bbb; }
-  .dot.busy { background: #e6b800; } .dot.done { background: #2a2; } .dot.error { background: #d33; }
+  span { display: flex; align-items: center; gap: 4px; font-variant-numeric: tabular-nums; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--muted); }
+  .dot.busy { border-color: var(--draft); background: var(--draft); } .dot.done { border-color: var(--sealed); background: var(--sealed); } .dot.error { border-color: var(--warn); background: var(--warn); }
 </style>

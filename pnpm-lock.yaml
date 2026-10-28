@@ -6,7 +6,7 @@ settings:
 
 patchedDependencies:
   epubjs@0.3.93:
-    hash: e2509d8c1f556d5e103d50202cd117bc04365f09efbbf746f4bfc01ec14ff19a
+    hash: 1a2f3f3eef0bce61bd0004005e36ad5259504fb1090f3fbaffe7a194f8b730b8
     path: patches/epubjs@0.3.93.patch
 
 importers:
@@ -15,7 +15,7 @@ importers:
     dependencies:
       epubjs:
         specifier: ^0.3.93
-        version: 0.3.93(patch_hash=e2509d8c1f556d5e103d50202cd117bc04365f09efbbf746f4bfc01ec14ff19a)
+        version: 0.3.93(patch_hash=1a2f3f3eef0bce61bd0004005e36ad5259504fb1090f3fbaffe7a194f8b730b8)
       jszip:
         specifier: ^3.10.2
         version: 3.10.2
@@ -746,7 +746,7 @@ snapshots:
 
   devalue@5.9.4: {}
 
-  epubjs@0.3.93(patch_hash=e2509d8c1f556d5e103d50202cd117bc04365f09efbbf746f4bfc01ec14ff19a):
+  epubjs@0.3.93(patch_hash=1a2f3f3eef0bce61bd0004005e36ad5259504fb1090f3fbaffe7a194f8b730b8):
     dependencies:
       '@types/localforage': 0.0.34
       '@xmldom/xmldom': 0.7.13

@@ -22,3 +22,5 @@ pnpm test          # EPUB 빌더 self-check
 - 포트 변경: `PORT=5184 node server.ts`, `API_PORT=5184 vite`
 - 책의 목차 페이지는 표가 아닌 `contents` 블록(쪽번호 제거, 공백 2칸 들여쓰기 = 하위 항목)으로 인식. 이미 표로 인식된 목차는 블록의 "⇄ 목차로 변환"
 - 글자 스타일: `<b> <i> <u> <sup> <sub> <code>`, `<span class="sans|serif|mono">`, `<span style="color:#RRGGBB">` 만 허용(나머지는 escape). 블록 편집기 서식 버튼으로 선택 영역에 적용, 책 정보에서 본문 글꼴(명조/고딕) 선택
+- 블록 스타일: 정렬(가운데/오른쪽), 인용·들여쓰기, 작게/크게, 상자(테두리/음영/옆줄 + 상자색). 같은 `group` 의 연속 블록은 한 상자(정의·정리·예제). 인라인 `<s> <mark>`, 배경색 span, `<span class="small|large">`
+- 각주: `footnote` 블록("1 내용") + 본문 `<sup class="fn">1</sup>` → 같은 장 안에서 뒤따르는 같은 표시의 각주와 EPUB 팝업 각주로 연결. 책 정보에서 문단 첫 줄 들여쓰기

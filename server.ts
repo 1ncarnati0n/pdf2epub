@@ -10,7 +10,11 @@ const CODEX_TIMEOUT_MS = 10 * 60_000
 
 const ID = /^[\w-]+$/
 const FILE = /^(source\.pdf|(pages|images)\/[\w.-]+)$/
-const TYPES: Record<string, string> = { '.png': 'image/png', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.pdf': 'application/pdf' }
+const TYPES: Record<string, string> = {
+  '.png': 'image/png', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.pdf': 'application/pdf', '.wasm': 'application/wasm', '.js': 'text/javascript',
+}
+// pdf.js 디코더(JBig2·JPEG2000·색 관리) wasm — 없으면 그 형식의 이미지를 건너뛴다
+const PDFJS_WASM = path.resolve('node_modules/pdfjs-dist/wasm')
 
 async function body(req: http.IncomingMessage) {
   const chunks: Buffer[] = []
@@ -74,21 +78,33 @@ http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url!, 'http://x')
     const [, api, projects, id, kind, ...rest] = url.pathname.split('/')
+    if (api === 'api' && projects === 'pdfjs-wasm' && id && /^[\w.-]+$/.test(id) && !kind)
+      return send(200, await fs.readFile(path.join(PDFJS_WASM, id)), TYPES[path.extname(id)] ?? 'application/octet-stream')
     if (api !== 'api' || projects !== 'projects') return send(404, { error: 'not found' })
 
     if (!id) {
       await fs.mkdir(ROOT, { recursive: true })
       const ids = (await fs.readdir(ROOT, { withFileTypes: true })).filter(d => d.isDirectory()).map(d => d.name)
       const list = await Promise.all(ids.map(async id => {
-        const p = JSON.parse(await fs.readFile(path.join(ROOT, id, 'project.json'), 'utf8').catch(() => '{}'))
-        return { id, title: p.title ?? id }
+        const dir = path.join(ROOT, id)
+        const p = JSON.parse(await fs.readFile(path.join(dir, 'project.json'), 'utf8').catch(() => '{}'))
+        const pages: any[] = p.pages ?? []
+        return {
+          id, title: p.title ?? id, author: p.author ?? '', pages: pages.length, done: pages.filter(pg => pg.status === 'done').length,
+          updatedAt: (await fs.stat(path.join(dir, 'project.json')).catch(() => null))?.mtimeMs ?? 0,
+          bytes: (await fs.stat(path.join(dir, 'source.pdf')).catch(() => null))?.size ?? 0,
+        }
       }))
-      return send(200, list)
+      return send(200, list.sort((a, b) => b.updatedAt - a.updatedAt))
     }
     if (!ID.test(id)) return send(400, { error: 'bad id' })
     const dir = path.join(ROOT, id)
 
     if (!kind) {
+      if (req.method === 'DELETE') {
+        await fs.rm(dir, { recursive: true, force: true })
+        return send(200, { ok: true })
+      }
       if (req.method === 'PUT') {
         await fs.mkdir(dir, { recursive: true })
         await fs.writeFile(path.join(dir, 'project.json'), await body(req))

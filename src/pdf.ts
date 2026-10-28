@@ -4,7 +4,8 @@ import worker from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 pdfjs.GlobalWorkerOptions.workerSrc = worker
 export type Doc = pdfjs.PDFDocumentProxy
 
-export const openPdf = (data: ArrayBuffer) => pdfjs.getDocument({ data }).promise
+// wasmUrl: server.ts 가 pdfjs-dist/wasm 을 서빙 (워커가 쓰므로 절대 URL)
+export const openPdf = (data: ArrayBuffer) => pdfjs.getDocument({ data, wasmUrl: new URL('/api/pdfjs-wasm/', location.href).href }).promise
 
 export async function render(doc: Doc, n: number, scale: number, canvas = document.createElement('canvas')) {
   const page = await doc.getPage(n)

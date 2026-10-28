@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Segmented from './Segmented.svelte'
   import Thumbs from './Thumbs.svelte'
   import { plain, type Block, type Project } from './epub'
   import type { Doc } from './pdf'
@@ -18,11 +19,8 @@
 
 <aside>
   <div class="tabs">
-    <button class:on={tab === 'pages'} onclick={() => (tab = 'pages')}>페이지</button>
-    <button class:on={tab === 'toc'} onclick={() => (tab = 'toc')}>목차</button>
-    <button class:on={tab === 'issues'} onclick={() => (tab = 'issues')}>
-      오류 {#if issues.length}<b class="badge">{issues.length}</b>{/if}
-    </button>
+    <Segmented size="small" label="왼쪽 패널" value={tab} pick={k => (tab = k)}
+      items={[{ key: 'pages', label: '페이지' }, { key: 'toc', label: '목차' }, { key: 'issues', label: '오류', count: issues.length }]} />
   </div>
 
   {#if tab === 'pages'}
@@ -57,18 +55,17 @@
 </aside>
 
 <style>
-  aside { display: flex; flex-direction: column; min-height: 0; background: var(--panel); border-right: 1px solid var(--line); }
+  /* epubeditor ChapterNav: 종이 바랜 배경, 현재 항목은 왼쪽 쪽빛 선 */
+  aside { display: flex; flex-direction: column; min-height: 0; background: var(--paper-dim); border-right: 1px solid var(--line); }
   aside > :global(.thumbs) { flex: 1; border-right: 0; }
-  .tabs { display: flex; border-bottom: 1px solid var(--line); }
-  .tabs button { all: unset; flex: 1; text-align: center; padding: 7px 0; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; font-size: 12px; }
-  .tabs button.on { color: var(--fg); border-bottom-color: var(--accent); font-weight: 600; }
-  .badge { background: var(--err); color: #fff; border-radius: 8px; padding: 0 5px; font-size: 10px; }
-  .list { list-style: none; margin: 0; padding: 4px; overflow-y: auto; flex: 1; }
-  .list button { all: unset; box-sizing: border-box; width: 100%; display: flex; gap: 6px; padding: 4px 6px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+  .tabs { padding: 0.7rem 0.8rem 0.5rem; }
+  .tabs :global(.seg) { width: 100%; }
+  .list { list-style: none; margin: 0; padding: 0 0 2rem; overflow-y: auto; flex: 1; }
+  .list button, .list button:hover:not(:disabled) { box-sizing: border-box; width: 100%; display: flex; gap: 6px; border: 0; border-left: 2px solid transparent; background: none; padding: 0.45rem 1rem 0.45rem 0.8rem; color: var(--ink); font-size: 0.8rem; text-align: left; white-space: normal; }
   .list button span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .list button small { color: var(--muted); }
-  .list button:hover { background: var(--hover); }
-  .list li.cur button { background: var(--accent-soft); }
-  .lv1 button { font-weight: 600; } .lv2 button { padding-left: 16px; } .lv3 button { padding-left: 28px; color: var(--muted); }
-  .pad { padding: 8px 10px; } .row span { white-space: nowrap; font-size: 12px; } .row { display: flex; align-items: center; gap: 6px; justify-content: space-between; }
+  .list button small { color: var(--muted); font-size: 0.7rem; font-variant-numeric: tabular-nums; }
+  .list button:hover:not(:disabled) { background: var(--paper); }
+  .list li.cur button { background: var(--paper); border-left-color: var(--sealed); }
+  .lv1 button { font-weight: 700; } .lv2 button { padding-left: 1.6rem !important; } .lv3 button { padding-left: 2.4rem !important; color: var(--muted) !important; }
+  .pad { padding: 0.6rem 1rem; font-size: 0.75rem; } .row { display: flex; align-items: center; gap: 6px; justify-content: space-between; } .row span { white-space: nowrap; }
 </style>

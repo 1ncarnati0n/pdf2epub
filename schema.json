@@ -1,25 +1,95 @@
 {
   "type": "object",
   "additionalProperties": false,
-  "required": ["continues", "notation", "blocks"],
+  "required": [
+    "continues",
+    "notation",
+    "blocks"
+  ],
   "properties": {
-    "continues": { "type": "boolean", "description": "첫 블록이 직전 페이지 마지막 문단의 연속이면 true" },
-    "notation": { "type": "string", "description": "이 페이지에서 새로 정의된 기호/표기 규칙. 없으면 빈 문자열" },
+    "continues": {
+      "type": "boolean",
+      "description": "첫 블록이 직전 페이지 마지막 문단의 연속이면 true"
+    },
+    "notation": {
+      "type": "string",
+      "description": "이 페이지에서 새로 정의된 기호/표기 규칙. 없으면 빈 문자열"
+    },
     "blocks": {
       "type": "array",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["type", "text", "level", "ordered", "bbox"],
+        "required": [
+          "type",
+          "text",
+          "level",
+          "ordered",
+          "bbox",
+          "style",
+          "tint",
+          "group"
+        ],
         "properties": {
-          "type": { "type": "string", "enum": ["heading", "paragraph", "math", "figure", "table", "list", "contents"] },
-          "text": { "type": "string" },
-          "level": { "type": "integer", "description": "heading 레벨 1~3, 그 외 0" },
-          "ordered": { "type": "boolean", "description": "list 가 번호 목록이면 true" },
+          "type": {
+            "type": "string",
+            "enum": [
+              "heading",
+              "paragraph",
+              "math",
+              "figure",
+              "table",
+              "list",
+              "contents",
+              "footnote"
+            ]
+          },
+          "text": {
+            "type": "string"
+          },
+          "level": {
+            "type": "integer",
+            "description": "heading 레벨 1~3, 그 외 0"
+          },
+          "ordered": {
+            "type": "boolean",
+            "description": "list 가 번호 목록이면 true"
+          },
           "bbox": {
-            "type": "array", "minItems": 4, "maxItems": 4,
-            "items": { "type": "number" },
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+              "type": "number"
+            },
             "description": "[x, y, w, h], 페이지 좌상단 기준 0~1 정규화"
+          },
+          "style": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "center",
+                "right",
+                "quote",
+                "indent",
+                "noindent",
+                "small",
+                "large",
+                "box",
+                "shade",
+                "rule"
+              ]
+            },
+            "description": "블록 편집 스타일. 없으면 []"
+          },
+          "tint": {
+            "type": "string",
+            "description": "상자(box/shade/rule) 색 #RRGGBB. 없으면 빈 문자열"
+          },
+          "group": {
+            "type": "integer",
+            "description": "같은 상자에 들어가는 블록끼리 같은 번호(쪽 안에서 1부터). 상자 밖이면 0"
           }
         }
       }

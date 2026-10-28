@@ -1,6 +1,7 @@
 <script lang="ts">
   import { untrack } from 'svelte'
   import ePub, { type Book, type Rendition } from 'epubjs'
+  import Segmented from './Segmented.svelte'
 
   // epub: buildEpub 결과(내보내기와 동일), target: 보여줄 위치(chNNN.xhtml#b-id). target 이 바뀌면 그 위치로 이동
   let { epub, target }: { epub: ArrayBuffer, target?: string } = $props()
@@ -17,7 +18,11 @@
     shown = at
     rendition?.destroy()
     el!.innerHTML = ''
-    const r = rendition = book!.renderTo(el!, { width: '100%', height: '100%', flow, spread: 'none', allowScriptedContent: false })
+    // 스크롤은 continuous 매니저로 장을 이어 붙인다 (scrolled-doc 은 한 장만 보여서 앞 장이 그림뿐이면 글이 안 보임)
+    const r = rendition = book!.renderTo(el!, {
+      width: '100%', height: '100%', spread: 'none', allowScriptedContent: false,
+      ...(flow === 'paginated' ? { flow } : { flow: 'scrolled', manager: 'continuous' }),
+    })
     r.themes.fontSize(font + '%')
     r.themes.default({ '.math-error': { color: '#d33' }, '.pdf2epub-hit': { background: '#fff3a0', transition: 'background .6s' } })
     r.on('relocated', (loc: any) => {
@@ -41,9 +46,10 @@
 
   // 새 빌드: 책을 다시 열고 현재 target 위치에서 시작
   $effect(() => {
-    const b = book = ePub(epub as any)
+    book = ePub(epub as any)
     untrack(() => mount(target))
-    return () => { rendition?.destroy(); rendition = null; b.destroy() }
+    // ponytail: book.destroy() 는 안 부름. 렌더 중인 장의 훅이 지워진 book.packaging 을 읽다 TypeError — 참조만 끊고 GC 에 맡김
+    return () => { rendition?.destroy(); rendition = null; book = null }
   })
 
   // 위치만 바뀜
@@ -68,10 +74,8 @@
 
 <div class="pv">
   <div class="tools">
-    <div class="seg">
-      <button class:on={flow === 'scrolled-doc'} onclick={() => setFlow('scrolled-doc')} title="스크롤">☰ 스크롤</button>
-      <button class:on={flow === 'paginated'} onclick={() => setFlow('paginated')} title="페이지">▤ 페이지</button>
-    </div>
+    <Segmented size="small" label="넘김 방식" value={flow} pick={setFlow}
+      items={[{ key: 'scrolled-doc', label: '스크롤' }, { key: 'paginated', label: '페이지' }]} />
     <button onclick={() => zoom(-10)} title="글자 작게">A−</button>
     <span class="muted">{font}%</span>
     <button onclick={() => zoom(10)} title="글자 크게">A+</button>
@@ -84,10 +88,8 @@
 </div>
 
 <style>
-  .pv { display: flex; flex-direction: column; height: 100%; }
-  .tools { display: flex; gap: 4px; align-items: center; padding: 6px 10px; border-bottom: 1px solid var(--line); background: var(--bg); }
+  .pv { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+  .tools { display: flex; gap: 6px; align-items: center; padding: 0.4rem 1.1rem; border-bottom: 1px solid var(--line); font-size: 0.75rem; }
+  .tools button { padding: 0.15rem 0.5rem; }
   .reader { flex: 1; min-height: 0; background: #fff; padding: 0 16px; }
-  .seg { display: flex; }
-  .seg button { border-radius: 0; } .seg button:first-child { border-radius: 5px 0 0 5px; } .seg button:last-child { border-radius: 0 5px 5px 0; border-left: 0; }
-  .seg button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
 </style>

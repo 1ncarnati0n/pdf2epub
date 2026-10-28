@@ -1,0 +1,49 @@
+/* epubeditor 와 같은 조판실 팔레트 — 종이/먹/치자(진행 중)/쪽빛(완료·선택)/주토(오류) */
+:root {
+  --paper: #fafaf7;
+  --paper-dim: #f2f1ec;
+  --ink: #1c1b18;
+  --muted: #8a877e;
+  --line: #e4e1d8;
+  --draft: #a97a1f;
+  --sealed: #2f4b8f;
+  --warn: #9d3f32;
+  --fresh: #eef2fb;
+  --font-ui: 'Pretendard', -apple-system, 'Apple SD Gothic Neo', sans-serif;
+  --font-en: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  /* 컴포넌트들이 쓰던 이름 → 새 팔레트 */
+  --bg: var(--paper); --panel: var(--paper-dim); --fg: var(--ink); --hover: var(--paper-dim);
+  --accent: var(--sealed); --accent-soft: var(--fresh); --err: var(--warn); --ai: var(--draft);
+  --math: var(--draft); --fig: #3f7a4f;
+}
+
+@font-face { font-family: 'Pretendard'; src: local('Pretendard'), url('/fonts/Pretendard-Regular.otf') format('opentype'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Pretendard'; src: local('Pretendard Bold'), url('/fonts/Pretendard-Bold.otf') format('opentype'); font-weight: 700; font-display: swap; }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--paper); color: var(--ink); font-family: var(--font-ui); font-size: 14px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased; display: flex; flex-direction: column;
+}
+#app { display: contents; }
+button, select, input, textarea, .btn {
+  font: inherit; color: inherit; background: var(--paper); border: 1px solid var(--line); border-radius: 0; padding: 0.25rem 0.6rem;
+}
+button, .btn { cursor: pointer; white-space: nowrap; color: var(--muted); font-size: 0.8rem; }
+button:hover:not(:disabled), .btn:hover { border-color: var(--sealed); color: var(--sealed); }
+button:disabled { cursor: default; opacity: 0.45; }
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--sealed); }
+:focus-visible { outline: 2px solid var(--sealed); outline-offset: 2px; }
+button.primary { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+button.primary:hover:not(:disabled) { border-color: var(--ink); color: var(--paper); opacity: 0.85; }
+button.ai { border-color: color-mix(in srgb, var(--draft) 40%, var(--line)); color: var(--draft); }
+button.ai:hover:not(:disabled) { border-color: var(--draft); color: var(--draft); }
+button.danger { border-color: color-mix(in srgb, var(--warn) 45%, transparent); color: var(--warn); }
+.grow { flex: 1; }
+.muted { color: var(--muted); }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
